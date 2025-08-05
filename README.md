@@ -1,3 +1,12 @@
+<p align="center">
+  <img src="https://img.shields.io/badge/Python-3670A0?style=for-the-badge&logo=python&logoColor=ffdd54" />
+  <img src="https://img.shields.io/badge/Flask-000000?style=for-the-badge&logo=flask&logoColor=white" />
+  <img src="https://img.shields.io/badge/Java-ED8B00?style=for-the-badge&logo=java&logoColor=white" />
+  <img src="https://img.shields.io/badge/Spring_Boot-6DB33F?style=for-the-badge&logo=spring-boot&logoColor=white" />
+  <img src="https://img.shields.io/badge/Docker-2496ED?style=for-the-badge&logo=docker&logoColor=white" />
+</p>
+
+
 # Docker Basics
 
 ## Overview
@@ -114,3 +123,117 @@ CMD ["python", "app.py"]
 MY_ENV_VAR is: HelloAgain
 ```
 ## Spring Boot Application
+
+## Create Project via Spring CLI
+
+```bash
+spring init --groupId=com.example --artifactId=demo-maven --name=spring-boot-maven-app --dependencies=web --boot-version=3.4.0 --build=maven 
+     spring-boot-maven-app
+
+# unzip the project
+
+unzip demo-maven.zip -d spring-boot-maven-app
+```
+**A*dd GrettingController.java in spring-boot-maven-app/src/main/java/com/example/demo_maven path***
+```java
+package com.example.demo_maven;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+@RestController
+public class GreetingController {
+  @Value("${SPRING_PROFILES_ACTIVE:default}")
+  private String profile;
+
+  @GetMapping("/")
+  public String greet() {
+    return "Spring profile is: " + profile;
+  }
+}
+```
+## Build and Run Locally
+
+```bash
+cd spring-boot-app
+./mvnw clean package -DskipTests
+SPRING_PROFILES_ACTIVE=LocalDev java -jar target/demo-maven-0.0.1-SNAPSHOT.jar
+```
+***Verify***
+```bash
+> curl http://localhost:8080
+Spring profile is: LocalDev
+```
+
+## Build,Run and Push
+
+```bash
+> cd spring-boot-app
+> docker build -t linckon/spring-boot-app:v1 . 
+> docker run -e SPRING_PROFILES_ACTIVE=LocalDev -p 8081:8080 linckon/spring-boot-app:v1
+> curl http://localhost:8081
+Spring profile is: LocalDev
+> docker push linckon/spring-boot-app:v1
+```
+
+***Pull and Test Locally***
+```bash
+> docker rmi linckon/spring-boot-app:v1 --force
+> docker pull linckon/spring-boot-app:v1
+> docker run -e SPRING_PROFILES_ACTIVE=LocalDev -p 8081:8080 linckon/spring-boot-app:v1
+```
+
+## Docker Compose
+
+***docker-compose.yml***
+
+```yaml
+version: '3.8'
+
+services:
+  python-app:
+    image: linckon/python-app:v1
+    container_name: python-app
+    ports:
+      - "5000:5000"
+    environment:
+      - MY_ENV_VAR=Running_From_python-app_Container
+
+  spring-boot-app:
+    image: linckon/spring-boot-app:v1
+    container_name: spring-boot-app
+    ports:
+      - "8081:8080"
+    environment:
+      - SPRING_PROFILES_ACTIVE=Running_From_spring-boot-app_Container
+    depends_on:
+      - python-app
+
+```
+
+  ***Start and Verify***
+
+  ```bash
+    > docker-compose up -d
+    > docker ps
+    CONTAINER ID   IMAGE                        COMMAND                CREATED              STATUS         PORTS                                         NAMES
+    e9bb5cf55463   linckon/spring-boot-app:v1   "java -jar /app.jar"   About a minute ago   Up 6 seconds   0.0.0.0:8081->8080/tcp, [::]:8081->8080/tcp   spring-boot-app
+    c96883e482e1   linckon/python-app:v1        "python app.py"        About a minute ago   Up 7 seconds   0.0.0.0:5000->5000/tcp, :::5000->5000/tcp     python-app
+
+    # Verify Python application
+    > curl http://localhost:5000/
+    # MY_ENV_VAR is: Running_From_python-app_Container
+
+    # Verify Spring Boot application
+    > curl http://localhost:8081/
+    # Spring profile is: Running_From_spring-boot-app_Container
+  ```
+
+  ## Conclusion
+    Now we have:
+
+    - A Flask-based Python service run locally or containerized, accepting runtime environment variables.
+
+    - A Spring Boot application run locally or containerized, configured via environment variables.
+
+    - A Docker Compose setup that ensures the Spring Boot container starts only after the Python container is up.
