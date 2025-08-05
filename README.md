@@ -127,8 +127,12 @@ MY_ENV_VAR is: HelloAgain
 ## Create Project via Spring CLI
 
 ```bash
-spring init --groupId=com.example --artifactId=demo-maven --name=spring-boot-maven-app --dependencies=web --boot-version=3.4.0 --build=maven 
-     spring-boot-maven-app
+spring init --groupId=com.example \
+--artifactId=demo-maven \
+--name=spring-boot-maven-app \
+--dependencies=web \
+--boot-version=3.4.0 \
+--build=maven spring-boot-maven-app
 
 # unzip the project
 
@@ -180,7 +184,9 @@ Spring profile is: LocalDev
 ```bash
 > docker rmi linckon/spring-boot-app:v1 --force
 > docker pull linckon/spring-boot-app:v1
-> docker run -e SPRING_PROFILES_ACTIVE=LocalDev -p 8081:8080 linckon/spring-boot-app:v1
+> docker run \
+-e SPRING_PROFILES_ACTIVE=LocalDev \
+-p 8081:8080 linckon/spring-boot-app:v1
 ```
 
 ## Docker Compose
